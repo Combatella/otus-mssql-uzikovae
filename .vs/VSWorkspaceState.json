@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\HW02 (GROUP BY)",
+    "\\HW03 (SUBQUERY)"
   ],
-  "SelectedNode": "\\.gitattributes",
+  "SelectedNode": "\\HW03 (SUBQUERY)\\hw_subqueries_tasks.sql",
   "PreviewInSolutionExplorer": false
 }
