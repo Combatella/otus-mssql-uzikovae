@@ -85,10 +85,3 @@ order by il.Description, [Year], [Month]
 Написать запросы 2-3 так, чтобы если в каком-то месяце не было продаж,
 то этот месяц также отображался бы в результатах, но там были нули.
 */
-
-select year(i.InvoiceDate) as [Year], month(i.InvoiceDate) as [Month], sum(il.ExtendedPrice) as [Sum ExtendedPrice] 
-from Sales.InvoiceLines as il
-left join Sales.Invoices as i on i.InvoiceID = il.InvoiceID
-group by year(i.InvoiceDate), month(i.InvoiceDate)
-having sum(il.ExtendedPrice) > 4600000
-order by [Year], [Month]
