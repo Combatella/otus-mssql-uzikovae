@@ -41,5 +41,31 @@ InvoiceMonth | Aakriti Byrraju    | Abel Spirlea       | Abel Tatarescu | ... (�
 -------------+--------------------+--------------------+----------------+----------------------
 */
 
-
-напишите здесь свое решение
+-- данное решение нужно переписать для всех клиентов с использованием динамического запроса
+select 
+	(select format(cast(concat('01.', [Month], '.', [Year]) as date), 'dd.MM.yyyy' )) as InvoiceMonth,
+	isnull([Jessie, ND], 0) as [Jessie, ND],
+	isnull([Medicine Lodge, KS], 0) as [Medicine Lodge, KS],
+	isnull([Peeples Valley, AZ],  0) as [Peeples Valley, AZ],
+	isnull([Sylvanite, MT], 0) as [Sylvanite, MT]
+from 
+(
+	select distinct 
+		month(i.InvoiceDate) as [Month],
+		year(i.InvoiceDate) as [Year],
+		replace(replace(c.CustomerName, left(c.CustomerName, charindex('(', c.CustomerName)), ''), ')', '') as CustomerName,		
+		sum((
+			select count(*) from Sales.InvoiceLines as il 
+			where i.InvoiceID = il.InvoiceID
+			)) 
+		over(
+			partition by year(i.InvoiceDate), month(i.InvoiceDate), CustomerName
+		) as InvoiceCount		
+	from Sales.Invoices as i
+		join Sales.Customers as c on i.CustomerID = c.CustomerID
+	where i.CustomerID between 2 and 6
+) as Invoices
+pivot (
+	sum(InvoiceCount)
+	for CustomerName in ([Gasport, NY], [Jessie, ND], [Medicine Lodge, KS], [Peeples Valley, AZ],  [Sylvanite, MT])
+) as pvt_i

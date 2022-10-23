@@ -40,7 +40,7 @@ InvoiceMonth | Peeples Valley, AZ | Medicine Lodge, KS | Gasport, NY | Sylvanite
 */
 
 select 
-	(select format(cast(concat('01.', [Month], '.', [Year]) as date), 'dd.MM.yyyy' )) as d,
+	(select format(cast(concat('01.', [Month], '.', [Year]) as date), 'dd.MM.yyyy' )) as InvoiceMonth,
 	isnull([Jessie, ND], 0) as [Jessie, ND],
 	isnull([Medicine Lodge, KS], 0) as [Medicine Lodge, KS],
 	isnull([Peeples Valley, AZ],  0) as [Peeples Valley, AZ],
