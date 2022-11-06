@@ -1,9 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\HW02 (GROUP BY)",
-    "\\HW03 (SUBQUERY)"
+    "\\HW06 (dynamic sql)",
+    "\\HW07 (DML)"
   ],
-  "SelectedNode": "\\HW03 (SUBQUERY)\\hw_subqueries_tasks.sql",
+  "SelectedNode": "\\HW06 (dynamic sql)\\hw_dynamic_sql_tasks.sql",
   "PreviewInSolutionExplorer": false
 }
