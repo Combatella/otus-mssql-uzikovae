@@ -1,0 +1,8 @@
+﻿################################################################################
+# Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/otus-mssql-uzikovae/v17/.wsuo
+/.vs/otus-mssql-uzikovae/FileContentIndex
+/.vs/slnx.sqlite
+/.gitignore
