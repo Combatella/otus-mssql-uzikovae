@@ -56,7 +56,7 @@ CREATE UNIQUE NONCLUSTERED INDEX Number_SubGroups ON dbo.SubGroups
 
 ALTER TABLE dbo.SubGroups SET (LOCK_ESCALATION = TABLE)
 
--- МТР Раздел
+-- МТР Секция
 CREATE TABLE dbo.Sections
 	(
 	SectionID uniqueidentifier NOT NULL,
@@ -85,7 +85,7 @@ CREATE UNIQUE NONCLUSTERED INDEX Number_Sections ON dbo.Sections
 
 ALTER TABLE dbo.Sections SET (LOCK_ESCALATION = TABLE)
 
--- МТР Подраздел
+-- МТР Раздел
 CREATE TABLE dbo.SubSections
 	(
 	SubSectionID uniqueidentifier NOT NULL,
@@ -162,7 +162,8 @@ CREATE TABLE dbo.Properties
 	CodeListID uniqueidentifier,
 	PropertyValue nvarchar(128),
 	ValueTypeID uniqueidentifier,
-	IsDelete bit NULL
+	IsDelete bit NULL,
+	[Status] nchar(20) NOT NULL CONSTRAINT DF_Properties_Status DEFAULT N'Подготовка'
 	)  ON [PRIMARY]
 
 ALTER TABLE dbo.Properties ADD CONSTRAINT
