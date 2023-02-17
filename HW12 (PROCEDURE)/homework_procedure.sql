@@ -34,7 +34,7 @@ END
 -- Sales.InvoiceLines
 GO
 CREATE PROCEDURE [Application].[GetCustomerWithMaxSumInvoice]
-WITH EXECUTE AS OWNER
+WITH EXECUTE AS CALLER
 AS
 BEGIN
     SET NOCOUNT ON
@@ -85,6 +85,7 @@ END
 GO
 CREATE PROCEDURE [Application].[GetAllSumByCostumerID]
 	@CustomerID int
+WITH EXECUTE AS CALLER
 AS
 BEGIN
 	select sum(il.ExtendedPrice)
@@ -94,7 +95,6 @@ BEGIN
 	where c.CustomerID = @CustomerID
 END
 GO
-
 
 set statistics time on
 select [Application].[FnGetCustomerWithMaxSumInvoice]() 
@@ -137,3 +137,49 @@ exec [Application].[GetAllSumByCostumerID] 836
 -- Время работы SQL Server:
 --   Время ЦП = 31 мс, затраченное время = 30 мс.
 --Время выполнения: 2023-02-17T19:37:35.2609817+05:00
+
+
+
+-- Заказы (с датой комплектации) с ценой товара более @overprice $ 
+GO
+CREATE FUNCTION [Application].[GetOrdersOverprice] (@overprice int)  
+RETURNS TABLE  
+AS  
+RETURN   
+(  
+    select 
+	o.OrderID, 
+	format(o.OrderDate, 'dd.MM.yyyy') as OrderDate, 
+	datename(month, o.OrderDate) as NameMonth, 
+	datename(quarter, o.OrderDate) as Quartal,
+	ceiling(cast(month(o.OrderDate) as decimal(3,1)) / 12 * 3) as Trimester,	
+	c.CustomerName 
+	from Sales.Orders as o
+	join Sales.OrderLines as ol on o.OrderID = ol.OrderID
+	join Sales.Customers as c on o.CustomerID = c.CustomerID
+	where ol.UnitPrice > @overprice and ol.PickingCompletedWhen is not null
+)
+GO
+
+-- обработка каждой строки с помощью курсора
+DECLARE mycursor CURSOR
+FOR SELECT OrderDate, CustomerName FROM [Application].[GetOrdersOverprice] (100)
+OPEN mycursor
+
+declare @counter int
+declare @date DateTime2
+declare @name varchar(100)
+set @counter = 0
+
+fetch next from mycursor INTO  @date, @name
+
+while @@FETCH_STATUS = 0
+begin
+	set @counter = @counter + 1
+	print @counter
+	print @date
+	print @name
+fetch next from mycursor INTO  @date, @name
+end
+close mycursor
+deallocate mycursor
