@@ -5,7 +5,7 @@
 -- Sales.Invoices
 -- Sales.InvoiceLines
 GO
-CREATE FUNCTION [Application].[GetCustomerWithMaxSumInvoice] ()
+CREATE FUNCTION [Application].[FnGetCustomerWithMaxSumInvoice]()
 RETURNS VARCHAR(250)
 WITH EXECUTE AS CALLER
 AS BEGIN
@@ -37,9 +37,8 @@ CREATE PROCEDURE [Application].[GetCustomerWithMaxSumInvoice]
 WITH EXECUTE AS OWNER
 AS
 BEGIN
-    SET NOCOUNT ON;
-    
-    BEGIN
+    SET NOCOUNT ON
+
 		select [CustomerName] from (
 			select top(1) 
 			il.InvoiceID,
@@ -51,11 +50,7 @@ BEGIN
 			left join [WideWorldImporters].[Sales].[Customers] as c on i.CustomerID = c.CustomerID
 			order by summa desc
 		) q1
-
-    END;
-END;
-
--- exec [Application].[GetCustomerWithMaxSumInvoice]
+END
 
 -- Написать хранимую функцию с входящим
 -- параметром СustomerID, выводящую сумму
@@ -65,8 +60,8 @@ END;
 -- Sales.Invoices
 -- Sales.InvoiceLines
 GO
-CREATE FUNCTION [Application].[GetAllSumByCostumerID] (@int CustomerID)
-RETURNS float(250)
+CREATE FUNCTION [Application].[FnGetAllSumByCostumerID] (@CustomerID int)
+RETURNS float(53)
 WITH EXECUTE AS CALLER
 AS BEGIN
     DECLARE @sum float
@@ -100,5 +95,45 @@ BEGIN
 END
 GO
 
---exec [Application].[GetAllSumByCostumerID] 836
---exec [Application].[GetAllSumByCostumerID] 908
+
+set statistics time on
+select [Application].[FnGetCustomerWithMaxSumInvoice]() 
+--Время синтаксического анализа и компиляции SQL Server: 
+-- время ЦП = 0 мс, истекшее время = 0 мс.
+--(затронута одна строка)
+-- Время работы SQL Server:
+--   Время ЦП = 94 мс, затраченное время = 86 мс.
+--Время выполнения: 2023-02-17T19:34:04.2153636+05:00
+
+exec [Application].[GetCustomerWithMaxSumInvoice]
+--Время синтаксического анализа и компиляции SQL Server: 
+-- время ЦП = 0 мс, истекшее время = 0 мс.
+--Время синтаксического анализа и компиляции SQL Server: 
+-- время ЦП = 0 мс, истекшее время = 0 мс.
+-- Время работы SQL Server:
+--   Время ЦП = 0 мс, затраченное время = 0 мс.
+-- Время работы SQL Server:
+--   Время ЦП = 78 мс, затраченное время = 78 мс.
+-- Время работы SQL Server:
+--   Время ЦП = 78 мс, затраченное время = 78 мс.
+--Время выполнения: 2023-02-17T19:34:28.6358095+05:00
+
+select [Application].[FnGetAllSumByCostumerID](836) as Sum
+--Время синтаксического анализа и компиляции SQL Server: 
+-- время ЦП = 0 мс, истекшее время = 0 мс.
+--(затронута одна строка)
+-- Время работы SQL Server:
+--   Время ЦП = 16 мс, затраченное время = 26 мс.
+--Время выполнения: 2023-02-17T19:37:11.6888183+05:00
+
+exec [Application].[GetAllSumByCostumerID] 836
+--Время синтаксического анализа и компиляции SQL Server: 
+-- время ЦП = 0 мс, истекшее время = 0 мс.
+--Время синтаксического анализа и компиляции SQL Server: 
+-- время ЦП = 0 мс, истекшее время = 0 мс.
+--(затронута одна строка)
+-- Время работы SQL Server:
+--   Время ЦП = 31 мс, затраченное время = 30 мс.
+-- Время работы SQL Server:
+--   Время ЦП = 31 мс, затраченное время = 30 мс.
+--Время выполнения: 2023-02-17T19:37:35.2609817+05:00
