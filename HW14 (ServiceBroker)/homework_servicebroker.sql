@@ -5,7 +5,13 @@
 --Проверьте, что вы корректно открываете и закрываете диалоги 
 --и у нас они не копятся.
 
-alter table Sales.Orders add OrderConfirmedProcessing datetime;
+create table Sales.OrdersStat
+(
+CustomerID int,
+OrderDateFrom date,
+OrderDateTo date,
+OrdersCount int
+)
 
 go
 
@@ -48,7 +54,8 @@ go
 create procedure Sales.SendRequestByCustomerAndDate
 (
 @CustomerID int,
-@OrderDate date
+@OrderDateFrom date,
+@OrderDateTo date
 )
 as
 begin
@@ -58,10 +65,18 @@ begin
 
 	begin transaction
 		select @RequestMessage =
-		(select CustomerID, @OrderDate as OrderDate
-		from Sales.Customers as sc 
-		where sc.CustomerID = @CustomerID
-		for xml auto, root('RequestMessage'));
+		(
+			select 
+			CustomerID, 
+			@OrderDateFrom as OrderDateFrom, 
+			@OrderDateTo as OrderDateTo, 
+			Count(OrderID) as OrdersCount
+			from Sales.Orders 
+			where CustomerID = @CustomerID 
+			and OrderDate between @OrderDateFrom and @OrderDateTo
+			group by CustomerID
+			for xml auto, root('RequestMessage')
+		);
 
 		begin dialog @InitDlgHandle
 		from service [WideWorldImporters/ServiceBroker/InitiatorService]
@@ -73,7 +88,7 @@ begin
 		message type 
 		[WideWorldImporters/ServiceBroker/RequestMessage]
 		(@RequestMessage);
-		select @RequestMessage as SentRequestMessage;		
+		
 	commit transaction
 end
 
@@ -88,7 +103,8 @@ begin
 	declare @ReplyMessage nvarchar(4000)
 	declare @ReplyMessageName Sysname
 	declare @CustomerID int
-	declare @OrderDate date
+	declare @OrderDateFrom date
+	declare @OrderDateTo date
 	declare @xml xml
 
 	begin transaction;
@@ -98,27 +114,42 @@ begin
 			@Message = Message_Body,
 			@MessageType = Message_Type_Name
 		from dbo.TargetQueueWideWorldImporters; 
-		
-		select @Message; -- убрать
 
 		set @xml = cast(@Message as xml);
 
 		select @CustomerID = R.Iv.value('@CustomerID', 'int')
-		from @xml.nodes('/RequestMessage/Inv') as R(Iv);
+		from @xml.nodes('/RequestMessage/Sales.Orders') as R(Iv);
 
-		select @OrderDate = R.Iv.value('@OrderDate', 'date')
-		from @xml.nodes('/RequestMessage/Inv') as R(Iv);
+		select @OrderDateFrom = R.Iv.value('@OrderDateFrom', 'date')
+		from @xml.nodes('/RequestMessage/Sales.Orders') as R(Iv);
+		
+		select @OrderDateTo = R.Iv.value('@OrderDateTo', 'date')
+		from @xml.nodes('/RequestMessage/Sales.Orders') as R(Iv);
 
-		if exists (select CustomerID from Sales.Customers where CustomerID = @CustomerID)
+		select @xml as xml, @CustomerID as CustomerID, @OrderDateFrom as OrderDateFrom, @OrderDateTo as OrderDateTo; -- убрать  
+
+		if exists (
+			select CustomerID, OrderDate 
+			from Sales.Orders 
+			where CustomerID = @CustomerID 
+			and OrderDate between @OrderDateFrom and @OrderDateTo
+			)
 		begin
-			update Sales.Orders
-			set OrderConfirmedProcessing = getutcdate()
-			where CustomerID = @CustomerID and OrderDate = @OrderDate;
+			declare @count int;
+			select @count = count(OrderID) from Sales.Orders 
+			where CustomerID = @CustomerID 
+			and OrderDate between @OrderDateFrom and @OrderDateTo
+
+			insert Sales.OrdersStat values
+			(
+			@CustomerID,
+			@OrderDateFrom,
+			@OrderDateTo,
+			@count
+			)
 		end;
 
-		select @Message as ReceivedRequestMessage, @MessageType; -- убрать  
-
-		if @MessageType=N'//WideWorldImporters/ServiceBroker/RequestMessage'
+		if @MessageType=N'WideWorldImporters/ServiceBroker/RequestMessage'
 		begin
 			set @ReplyMessage = N'<ReplyMessage> Message received</ReplyMessage>';
 
@@ -127,9 +158,7 @@ begin
 			(@ReplyMessage);
 			end conversation @TargetDlgHandle;
 		end
-
-		select @ReplyMessage as SendReplyMessage;
-
+		
 	commit transaction
 end
 
@@ -144,25 +173,28 @@ begin
 	begin transaction;
 
 		receive top(1)
-			@InitiatorReplyDlgHandle = conversation_handle,
+			@InitiatorReplyDlgHandle = Conversation_Handle,
 			@ReplyReceivedMessage = Message_Body
 		from dbo.InitiatorWideWorldImporters;
 
 		end conversation @InitiatorReplyDlgHandle;
 
-		select @ReplyReceivedMessage as ReceivedRepliedMessage;
-
 	commit transaction
 end
 
-select CustomerID, OrderConfirmedProcessing, * 
-from Sales.Orders
-where CustomerID = 173 and OrderDate = '2013-07-17';
 
-exec Sales.SendRequestByCustomerAndDate @CustomerID = 173, @OrderDate = '2013-07-17';
+exec Sales.SendRequestByCustomerAndDate @CustomerID = 173, @OrderDateFrom = '2012-01-01', @OrderDateTo = '2013-07-17';
 
-select cast(message_body as xml), * from dbo.TargetQueueWideWorldImporters
-select cast(message_body as xml), * from dbo.InitiatorWideWorldImporters
+select cast(message_body as xml), * from dbo.TargetQueueWideWorldImporters;
+select cast(message_body as xml), * from dbo.InitiatorWideWorldImporters;
 
-exec Sales.GetReport 
-exec Sales.ConfirmOrder
+exec Sales.GetReport;
+exec Sales.ConfirmOrder;
+
+select * from Sales.OrdersStat;
+
+--select Conversation_Handle, is_initiator, s.name as 'local service', far_service, sc.name 'contract', ce.state_desc
+--from sys.conversation_endpoints ce
+--left join sys.services s on ce.service_id=s.service_id
+--left join sys.service_contracts sc on ce.service_contract_id=sc.service_contract_id
+--order by conversation_handle
