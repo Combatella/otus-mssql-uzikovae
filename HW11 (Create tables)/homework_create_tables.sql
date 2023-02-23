@@ -1,121 +1,122 @@
 ﻿BEGIN TRANSACTION
 -- МТР Группа
-CREATE TABLE dbo.Groups
-	(
-	GrourID uniqueidentifier NOT NULL,
-	Name nvarchar(128) NOT NULL,
-	Number int NOT NULL,
-	IsDeleted bit NULL
-	)  ON [PRIMARY]
+SET ANSI_NULLS ON
+GO
 
-ALTER TABLE dbo.Groups ADD CONSTRAINT
-	DF_Groups_GrourID DEFAULT (newid()) FOR GrourID
+SET QUOTED_IDENTIFIER ON
+GO
 
-ALTER TABLE dbo.Groups ADD CONSTRAINT
-	DF_Groups_Name DEFAULT N'Резерв' FOR Name
+CREATE TABLE [dbo].[Groups](
+	[GrourID] [uniqueidentifier] NOT NULL,
+	[Name] [nvarchar](128) NOT NULL,
+	[Number] [nchar](2) NOT NULL,
+	[IsDeleted] [bit] NULL,
+ CONSTRAINT [PK_Group] PRIMARY KEY CLUSTERED 
+(
+	[GrourID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
 
-ALTER TABLE dbo.Groups ADD CONSTRAINT
-	PK_Group PRIMARY KEY CLUSTERED 
-	(
-	GrourID
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+ALTER TABLE [dbo].[Groups] ADD  CONSTRAINT [DF_Groups_GrourID]  DEFAULT (newid()) FOR [GrourID]
+GO
 
-CREATE UNIQUE NONCLUSTERED INDEX Number_Group ON dbo.Groups
-	(
-	Number
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+ALTER TABLE [dbo].[Groups] ADD  CONSTRAINT [DF_Groups_Name]  DEFAULT (N'Резерв') FOR [Name]
+GO
 
-ALTER TABLE dbo.Groups SET (LOCK_ESCALATION = TABLE)
+ALTER TABLE [dbo].[Groups]  WITH CHECK ADD CHECK  ((patindex('%[^0123456789]%',[Number])=(0)))
+GO
+
 
 -- МТР Подгруппа
-CREATE TABLE dbo.SubGroups
-	(
-	SubGroupID uniqueidentifier NOT NULL,
-	GroupID uniqueidentifier NOT NULL,
-	Name nvarchar(128) NOT NULL,
-	Number int NOT NULL,
-	IsDeleted bit NULL
-	)  ON [PRIMARY]
+SET ANSI_NULLS ON
+GO
 
-ALTER TABLE dbo.SubGroups ADD CONSTRAINT
-	DF_SubGroups_SubGroupID DEFAULT (newid()) FOR SubGroupID
+SET QUOTED_IDENTIFIER ON
+GO
 
-ALTER TABLE dbo.SubGroups ADD CONSTRAINT
-	DF_SubGroup_Name DEFAULT N'Резерв' FOR Name
+CREATE TABLE [dbo].[SubGroups](
+	[SubGroupID] [uniqueidentifier] NOT NULL,
+	[GroupID] [uniqueidentifier] NOT NULL,
+	[Name] [nvarchar](128) NOT NULL,
+	[Number] [nchar](3) NOT NULL,
+	[IsDeleted] [bit] NULL,
+ CONSTRAINT [PK_SubGroup] PRIMARY KEY CLUSTERED 
+(
+	[SubGroupID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
 
-ALTER TABLE dbo.SubGroups ADD CONSTRAINT
-	PK_SubGroups PRIMARY KEY CLUSTERED 
-	(
-	SubGroupID
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+ALTER TABLE [dbo].[SubGroups] ADD  CONSTRAINT [DF_SubGroups_GroupID]  DEFAULT (newid()) FOR [SubGroupID]
+GO
 
-CREATE UNIQUE NONCLUSTERED INDEX Number_SubGroups ON dbo.SubGroups
-	(
-	Number
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+ALTER TABLE [dbo].[SubGroups] ADD  CONSTRAINT [DF_SubGroups_Name]  DEFAULT (N'Резерв') FOR [Name]
+GO
 
-ALTER TABLE dbo.SubGroups SET (LOCK_ESCALATION = TABLE)
+ALTER TABLE [dbo].[SubGroups]  WITH CHECK ADD CHECK  ((patindex('%[^0123456789]%',[Number])=(0)))
+GO
 
 -- МТР Секция
-CREATE TABLE dbo.Sections
-	(
-	SectionID uniqueidentifier NOT NULL,
-	SubGroupID uniqueidentifier NOT NULL,
-	Name nvarchar(128) NOT NULL,
-	Number int NOT NULL,
-	IsDeleted bit NULL
-	)  ON [PRIMARY]
+SET ANSI_NULLS ON
+GO
 
-ALTER TABLE dbo.Sections ADD CONSTRAINT
-	DF_Sections_SectionID DEFAULT (newid()) FOR SectionID
+SET QUOTED_IDENTIFIER ON
+GO
 
-ALTER TABLE dbo.Sections ADD CONSTRAINT
-	DF_Section_Name DEFAULT N'Резерв' FOR Name
+CREATE TABLE [dbo].[Sections](
+	[SectionID] [uniqueidentifier] NOT NULL,
+	[SubGroupID] [uniqueidentifier] NOT NULL,
+	[Name] [nvarchar](128) NOT NULL,
+	[Number] [nchar](2) NOT NULL,
+	[IsDeleted] [bit] NULL,
+ CONSTRAINT [PK_Sections] PRIMARY KEY CLUSTERED 
+(
+	[SectionID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
 
-ALTER TABLE dbo.Sections ADD CONSTRAINT
-	PK_Sections PRIMARY KEY CLUSTERED 
-	(
-	SectionID
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+ALTER TABLE [dbo].[Sections] ADD  CONSTRAINT [DF_Sections_SectionID]  DEFAULT (newid()) FOR [SectionID]
+GO
 
-CREATE UNIQUE NONCLUSTERED INDEX Number_Sections ON dbo.Sections
-	(
-	Number
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+ALTER TABLE [dbo].[Sections] ADD  CONSTRAINT [DF_Section_Name]  DEFAULT (N'Резерв') FOR [Name]
+GO
 
-ALTER TABLE dbo.Sections SET (LOCK_ESCALATION = TABLE)
+ALTER TABLE [dbo].[Sections]  WITH CHECK ADD CHECK  ((patindex('%[^0123456789]%',[Number])=(0)))
+GO
 
 -- МТР Раздел
-CREATE TABLE dbo.SubSections
-	(
-	SubSectionID uniqueidentifier NOT NULL,
-	SectionID uniqueidentifier NOT NULL,
-	Name nvarchar(128) NOT NULL,
-	Number int NOT NULL,
-	TmplDescription nvarchar(max),
-	TmplShortDescription nvarchar(max),
-	TmplLongDescription nvarchar(max),
-	IsDeleted bit NULL
-	)  ON [PRIMARY]
+SET ANSI_NULLS ON
+GO
 
-ALTER TABLE dbo.SubSections ADD CONSTRAINT
-	DF_SubSections_SectionID DEFAULT (newid()) FOR SubSectionID
+SET QUOTED_IDENTIFIER ON
+GO
 
-ALTER TABLE dbo.SubSections ADD CONSTRAINT
-	DF_SubSection_Name DEFAULT N'Резерв' FOR Name
+CREATE TABLE [dbo].[SubSections](
+	[SubSectionID] [uniqueidentifier] NOT NULL,
+	[SectionID] [uniqueidentifier] NOT NULL,
+	[Name] [nvarchar](128) NOT NULL,
+	[Number] [nchar](3) NOT NULL,
+	[TemplateDescription] [nvarchar](max) NULL,
+	[TemplateShortDescription] [nvarchar](max) NULL,
+	[TemplateLongDescription] [nvarchar](max) NULL,
+	[IsDeleted] [bit] NULL,
+ CONSTRAINT [PK_SubSections] PRIMARY KEY CLUSTERED 
+(
+	[SubSectionID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
 
-ALTER TABLE dbo.SubSections ADD CONSTRAINT
-	PK_SubSections PRIMARY KEY CLUSTERED 
-	(
-	SubSectionID
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+ALTER TABLE [dbo].[SubSections] ADD  CONSTRAINT [DF_SubSections_SectionID]  DEFAULT (newid()) FOR [SubSectionID]
+GO
 
-CREATE UNIQUE NONCLUSTERED INDEX Number_Sections ON dbo.SubSections
-	(
-	Number
-	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+ALTER TABLE [dbo].[SubSections] ADD  CONSTRAINT [DF_SubSection_Name]  DEFAULT (N'Резерв') FOR [Name]
+GO
 
-ALTER TABLE dbo.SubSections SET (LOCK_ESCALATION = TABLE)
+ALTER TABLE [dbo].[SubSections]  WITH CHECK ADD CHECK  ((patindex('%[^0123456789]%',[Number])=(0)))
+GO
 
 --МТР Продукты
 CREATE TABLE dbo.Products
@@ -123,9 +124,9 @@ CREATE TABLE dbo.Products
 	ProductID uniqueidentifier NOT NULL,
 	SubSectionID uniqueidentifier NOT NULL,
 	Description nvarchar(MAX) NOT NULL,
-	ShortDescription nvarchar(128) NOT NULL,
+	ShortDescription nvarchar(256) NOT NULL,
 	LongDescription nvarchar(MAX) NOT NULL,
-	Number int NOT NULL,
+	Number [nchar](6) NOT NULL,
 	CodeMTR nvarchar(20) NOT NULL,
 	IsDelete bit NULL
 	)  ON [PRIMARY]
@@ -149,6 +150,9 @@ CREATE NONCLUSTERED INDEX Description_Products ON dbo.Products
 	(
 	ShortDescription
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+
+ALTER TABLE [dbo].[Products]  WITH CHECK ADD CHECK  ((patindex('%[^0123456789]%',[Number])=(0)))
+GO
 
 ALTER TABLE dbo.Products SET (LOCK_ESCALATION = TABLE)
 
