@@ -6,3 +6,5 @@
 /.vs/otus-mssql-uzikovae/FileContentIndex
 /.vs/slnx.sqlite
 /.gitignore
+/HW19 (Partition)/yeardata.ndf
+/HW19 (Partition)/orders.txt
